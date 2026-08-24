@@ -29,9 +29,10 @@ export default function ManageAdmins() {
   const fetchUsers = async () => {
     try {
       const res = await api.get('/admin/users');
-      setUsers(res.data);
+      setUsers(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error('Fetch users error:', err);
+      setUsers([]);
     }
   };
 

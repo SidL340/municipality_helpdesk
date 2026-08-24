@@ -16,9 +16,10 @@ export default function ManageDesks() {
   const fetchDesks = async () => {
     try {
       const res = await api.get('/admin/desks');
-      setDesks(res.data);
+      setDesks(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error('Fetch desks error:', err);
+      setDesks([]);
     }
   };
 

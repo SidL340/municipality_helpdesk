@@ -28,16 +28,16 @@ export default function Dashboard() {
   const fetchDashboard = async () => {
     try {
       const wardQuery = userRole === 'ward_admin' && wardNumber ? `?ward=${wardNumber}` : '';
-      const [sRes, pRes, wRes, rRes] = await Promise.all([
+      const [sRes, pRes, wRes, rRes] = await Promise.allSettled([
         api.get(`/analytics/today${wardQuery}`),
         api.get(`/analytics/peak-hours${wardQuery}`),
         api.get(`/analytics/weekly${wardQuery}`),
         api.get(`/analytics/recent-tokens${wardQuery}`),
       ]);
-      setStats(sRes.data);
-      setPeakHours(pRes.data);
-      setWeekly(wRes.data);
-      setRecent(rRes.data);
+      if (sRes.status === 'fulfilled' && sRes.value.data) setStats(sRes.value.data);
+      if (pRes.status === 'fulfilled' && Array.isArray(pRes.value.data)) setPeakHours(pRes.value.data);
+      if (wRes.status === 'fulfilled' && Array.isArray(wRes.value.data)) setWeekly(wRes.value.data);
+      if (rRes.status === 'fulfilled' && Array.isArray(rRes.value.data)) setRecent(rRes.value.data);
     } catch (err) {
       console.error('Error loading dashboard stats:', err);
     } finally {

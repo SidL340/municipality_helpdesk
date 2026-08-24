@@ -23,12 +23,15 @@ export default function ManageDocuments() {
   });
 
   useEffect(() => {
-    api.get('/admin/services').then((res) => {
-      setServices(res.data);
-      if (res.data.length > 0) {
-        setSelectedService(res.data[0].id);
-      }
-    });
+    api.get('/admin/services')
+      .then((res) => {
+        const data = Array.isArray(res.data) ? res.data : [];
+        setServices(data);
+        if (data.length > 0) {
+          setSelectedService(data[0].id);
+        }
+      })
+      .catch(() => setServices([]));
   }, []);
 
   useEffect(() => {
@@ -38,9 +41,10 @@ export default function ManageDocuments() {
   const fetchDocuments = async () => {
     try {
       const res = await api.get(`/admin/services/${selectedService}/documents`);
-      setDocuments(res.data);
+      setDocuments(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error('Fetch docs error:', err);
+      setDocuments([]);
     }
   };
 

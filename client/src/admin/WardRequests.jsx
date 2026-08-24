@@ -19,9 +19,10 @@ export default function WardRequests() {
   const fetchRequests = async () => {
     try {
       const res = await api.get('/admin/ward-registrations');
-      setRequests(res.data);
+      setRequests(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error('Fetch requests error:', err);
+      setRequests([]);
     } finally {
       setLoading(false);
     }

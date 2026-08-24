@@ -39,14 +39,14 @@ export default function ManageServices() {
 
   const fetchAll = async () => {
     try {
-      const [sRes, cRes, dRes] = await Promise.all([
+      const [sRes, cRes, dRes] = await Promise.allSettled([
         api.get('/admin/services'),
         api.get('/admin/categories'),
         api.get('/admin/desks'),
       ]);
-      setServices(sRes.data);
-      setCategories(cRes.data);
-      setDesks(dRes.data);
+      if (sRes.status === 'fulfilled' && Array.isArray(sRes.value.data)) setServices(sRes.value.data);
+      if (cRes.status === 'fulfilled' && Array.isArray(cRes.value.data)) setCategories(cRes.value.data);
+      if (dRes.status === 'fulfilled' && Array.isArray(dRes.value.data)) setDesks(dRes.value.data);
     } catch (err) {
       console.error('Fetch error:', err);
     }
