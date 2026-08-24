@@ -50,7 +50,7 @@ export default function KioskHome() {
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  const activeWard = wardNumber || localStorage.getItem('active_ward_number') || '32';
+  const activeWard = wardNumber || localStorage.getItem('active_ward_number') || '1';
 
   useEffect(() => {
     stop();
