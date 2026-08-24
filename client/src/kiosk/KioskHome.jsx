@@ -37,17 +37,44 @@ const CATEGORY_COLORS = [
   'from-violet-600 to-purple-800',
 ];
 
+const DEFAULT_CATEGORIES = [
+  { id: 1, name_np: 'पञ्जीकरण तथा व्यक्तिगत घटना', name_en: 'Civil Registration', icon: 'UserPlus', service_count: 8 },
+  { id: 2, name_np: 'नागरिकता तथा सिफारिस', name_en: 'Citizenship & Verification', icon: 'FileCheck', service_count: 6 },
+  { id: 3, name_np: 'जग्गा, भवन तथा सम्पत्ति', name_en: 'Land, Building & Property', icon: 'Home', service_count: 7 },
+  { id: 4, name_np: 'कर तथा राजस्व', name_en: 'Tax & Revenue', icon: 'Receipt', service_count: 6 },
+  { id: 5, name_np: 'सामाजिक सुरक्षा भत्ता', name_en: 'Social Security Allowance', icon: 'HeartHandshake', service_count: 7 },
+  { id: 6, name_np: 'प्रमाणीकरण तथा सिफारिस', name_en: 'General Recommendation', icon: 'ShieldCheck', service_count: 11 },
+  { id: 7, name_np: 'व्यापार, उद्योग तथा पेसा', name_en: 'Business & Trade', icon: 'Store', service_count: 5 },
+  { id: 8, name_np: 'भौतिक पूर्वाधार तथा योजना', name_en: 'Infrastructure & Urban', icon: 'HardHat', service_count: 4 },
+  { id: 9, name_np: 'विपद् व्यवस्थापन तथा राहत', name_en: 'Disaster Relief', icon: 'Flame', service_count: 3 },
+  { id: 10, name_np: 'शिक्षा, स्वास्थ्य तथा महिला/बालबालिका', name_en: 'Education & Health', icon: 'GraduationCap', service_count: 3 },
+];
+
+const DEFAULT_WARD_INFO = {
+  ward_number: 1,
+  ward_name_np: 'वडा नं. १ कार्यालय',
+  ward_name_en: 'Ward No. 1 Office',
+  municipality_np: 'वृन्दावन नगरपालिका',
+  municipality_en: 'Brindaban Municipality',
+  district_np: 'रौतहट',
+  province_np: 'मधेश प्रदेश',
+  chairperson_name_np: 'अध्यक्ष',
+  secretary_name_np: 'सचिव (गौतम)',
+  phone: '०५५-५४०१२३',
+  office_hours_np: '१०:०० - ५:००',
+};
+
 export default function KioskHome() {
   const { wardNumber } = useParams();
   const navigate = useNavigate();
   const { t, language, setLanguage, languages, getPhrase } = useLanguage();
 
-  const [categories, setCategories] = useState([]);
-  const [wardInfo, setWardInfo] = useState(null);
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+  const [wardInfo, setWardInfo] = useState(DEFAULT_WARD_INFO);
   const [availableWards, setAvailableWards] = useState([]);
   const [showWardModal, setShowWardModal] = useState(false);
   const [showAiModal, setShowAiModal] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   const activeWard = wardNumber || localStorage.getItem('active_ward_number') || '1';
@@ -64,18 +91,23 @@ export default function KioskHome() {
 
   const fetchHomeData = async () => {
     try {
-      const [catRes, wardRes, wardsListRes] = await Promise.all([
+      const results = await Promise.allSettled([
         api.get('/services/categories'),
         api.get(`/services/ward-info?ward=${activeWard}`),
         api.get('/services/wards'),
       ]);
-      setCategories(catRes.data);
-      setWardInfo(wardRes.data);
-      setAvailableWards(wardsListRes.data);
+
+      if (results[0].status === 'fulfilled' && Array.isArray(results[0].value.data) && results[0].value.data.length > 0) {
+        setCategories(results[0].value.data);
+      }
+      if (results[1].status === 'fulfilled' && results[1].value.data) {
+        setWardInfo(results[1].value.data);
+      }
+      if (results[2].status === 'fulfilled' && Array.isArray(results[2].value.data)) {
+        setAvailableWards(results[2].value.data);
+      }
     } catch (err) {
-      console.error('Error fetching kiosk data:', err);
-    } finally {
-      setLoading(false);
+      console.warn('Using default fallback data:', err);
     }
   };
 
