@@ -22,7 +22,13 @@ api.interceptors.response.use(
     if (err.response?.status === 401 || err.response?.status === 403) {
       if (window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin/login') {
         localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
         window.location.href = '/admin/login';
+      }
+      if (window.location.pathname.startsWith('/tech') && window.location.pathname !== '/tech/login') {
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+        window.location.href = '/tech/login';
       }
     }
     return Promise.reject(err);
