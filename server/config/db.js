@@ -28,21 +28,60 @@ if (dbType === 'mysql') {
   });
   dbWrapper = pool;
 } else {
-  // SQLite (Zero configuration offline mode with WAL concurrency)
-  const dbDir = path.join(__dirname, '..', '..', 'database');
-  if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
+  // SQLite (Universal Local & Vercel Serverless Concurrency)
+  let dbFile;
+
+  if (process.env.VERCEL) {
+    // Vercel serverless environment: Lambda filesystem is read-only except /tmp
+    const tmpDbFile = path.join('/tmp', 'ward_kiosk.sqlite');
+
+    // Locate bundled database in potential deployment paths
+    const candidates = [
+      path.join(process.cwd(), 'database', 'ward_kiosk.sqlite'),
+      path.join(__dirname, '..', '..', 'database', 'ward_kiosk.sqlite'),
+      path.join(__dirname, '..', 'database', 'ward_kiosk.sqlite'),
+    ];
+
+    let foundBundled = null;
+    for (const c of candidates) {
+      if (fs.existsSync(c)) {
+        foundBundled = c;
+        break;
+      }
+    }
+
+    if (!fs.existsSync(tmpDbFile)) {
+      if (foundBundled) {
+        try {
+          fs.copyFileSync(foundBundled, tmpDbFile);
+          console.log(`✅ Copied bundled database from ${foundBundled} to ${tmpDbFile}`);
+        } catch (e) {
+          console.warn('Failed to copy bundled database to /tmp:', e);
+        }
+      }
+    }
+
+    dbFile = tmpDbFile;
+  } else {
+    // Local Node development
+    const dbDir = path.join(__dirname, '..', '..', 'database');
+    if (!fs.existsSync(dbDir)) {
+      fs.mkdirSync(dbDir, { recursive: true });
+    }
+    dbFile = path.join(dbDir, 'ward_kiosk.sqlite');
   }
-  const dbFile = path.join(dbDir, 'ward_kiosk.sqlite');
+
   const sqliteDb = new sqlite3.Database(dbFile, (err) => {
     if (err) console.error('SQLite Database Connection Error:', err);
   });
 
-  // Enable WAL mode & 5s busy timeout to prevent database lock crashes during concurrent requests
+  // Enable WAL mode & busy timeout
   sqliteDb.serialize(() => {
-    sqliteDb.run('PRAGMA journal_mode = WAL;');
-    sqliteDb.run('PRAGMA busy_timeout = 5000;');
-    sqliteDb.run('PRAGMA synchronous = NORMAL;');
+    try {
+      sqliteDb.run('PRAGMA journal_mode = WAL;');
+      sqliteDb.run('PRAGMA busy_timeout = 5000;');
+      sqliteDb.run('PRAGMA synchronous = NORMAL;');
+    } catch (e) {}
   });
 
   dbWrapper = {
