@@ -1,0 +1,58 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-nepal-blue: #003893;
+  --color-nepal-blue-dark: #00225c;
+  --color-nepal-crimson: #DC143C;
+  --color-nepal-crimson-dark: #a10d2c;
+  --font-family-base: 'Mukta', sans-serif;
+}
+
+* {
+  font-family: 'Mukta', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.touch-btn {
+  min-height: 54px;
+  min-width: 54px;
+  transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.12s ease;
+}
+
+.touch-btn:active {
+  transform: scale(0.96);
+}
+
+/* Sound Wave Animation */
+@keyframes waveAnimation {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+
+.wave-bar {
+  animation: waveAnimation 0.6s ease-in-out infinite;
+}
+.wave-bar:nth-child(2) { animation-delay: 0.1s; }
+.wave-bar:nth-child(3) { animation-delay: 0.2s; }
+.wave-bar:nth-child(4) { animation-delay: 0.3s; }
+
+/* Custom Scrollbar for Touch Screens */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 56, 147, 0.4);
+  border-radius: 9999px;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 15px rgba(220, 20, 60, 0.4); }
+  50% { box-shadow: 0 0 30px rgba(220, 20, 60, 0.8); }
+}
+
+.pulse-glow {
+  animation: pulseGlow 2s infinite;
+}
